@@ -79,8 +79,6 @@ class tFPDF
 
     public function __construct($orientation = 'P', $unit = 'mm', $size = 'A4')
     {
-        // Some checks
-        $this->_dochecks();
         // Initialization of properties
         $this->page = 0;
         $this->n = 2;
@@ -219,7 +217,7 @@ class tFPDF
     public function SetCompression($compress)
     {
         // Set page compression
-        if (public function_exists('gzcompress'))
+        if (function_exists('gzcompress'))
 		$this->compress = $compress;
 	else
 		$this->compress = false;
@@ -1180,21 +1178,7 @@ class tFPDF
      *                              Protected methods                               *
      *                                                                              *
      *******************************************************************************/
-    protected function _dochecks()
-    {
-        // Check availability of %F
-        if (sprintf('%.1F', 1.0) != '1.0')
-            $this->Error('This version of PHP is not supported');
-        // Check availability of mbstring
-        if (!protected function_exists('mb_strlen'))
-		$this->Error('mbstring extension is not available');
-	// Check mbstring overloading
-	if (ini_get('mbstring.func_overload') & 2)
-        $this->Error('mbstring overloading must be disabled');
-	// Ensure runtime magic quotes are disabled
-	if (get_magic_quotes_runtime())
-        @set_magic_quotes_runtime(0);
-}
+   
 
     protected function _getfontpath()
     {

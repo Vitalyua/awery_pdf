@@ -6,7 +6,7 @@ define("_SYSTEM_TTFONTS", "/tmp/unifont/");
 
 require_once 'FPdfPprotection.php';
 
-class AweryPdf extends FPDF_Protection
+class AweryPdf2 extends FPDF_Protection
 {
 
     protected $awery_text = 'Awery Aviation Solutions - www.awery.aero / ';

@@ -65,7 +65,7 @@ class FPDF_Protection extends tFPDF
 *                                                                           *
 ****************************************************************************/
 
-        private function _putstream($s)
+        protected function _putstream($s)
         {
                 if ($this->encrypted) {
                         $s = $this->_RC4($this->_objectkey($this->n), $s);
@@ -73,7 +73,7 @@ class FPDF_Protection extends tFPDF
                 parent::_putstream($s);
         }
 
-        private function _textstring($s)
+        protected function _textstring($s)
         {
                 if ($this->encrypted) {
                         $s = $this->_RC4($this->_objectkey($this->n), $s);
@@ -84,7 +84,7 @@ class FPDF_Protection extends tFPDF
         /**
         * Compute key depending on object number where the encrypted data is stored
         */
-        private function _objectkey($n)
+        protected function _objectkey($n)
         {
                 return substr($this->_md5_16($this->encryption_key.pack('VXxx',$n)),0,10);
         }
@@ -92,7 +92,7 @@ class FPDF_Protection extends tFPDF
         /**
         * Escape special characters
         */
-        private function _escape($s)
+        protected function _escape($s)
         {
                 $s=str_replace('\\','\\\\',$s);
                 $s=str_replace(')','\\)',$s);
@@ -101,7 +101,7 @@ class FPDF_Protection extends tFPDF
                 return $s;
         }
 
-        private function _putresources()
+        protected function _putresources()
         {
                 parent::_putresources();
                 if ($this->encrypted) {
@@ -114,7 +114,7 @@ class FPDF_Protection extends tFPDF
                 }
         }
 
-        private function _putencryption()
+        protected function _putencryption()
         {
                 $this->_out('/Filter /Standard');
                 $this->_out('/V 1');
@@ -124,7 +124,7 @@ class FPDF_Protection extends tFPDF
                 $this->_out('/P '.$this->Pvalue);
         }
 
-        private function _puttrailer()
+        protected function _puttrailer()
         {
                 parent::_puttrailer();
                 if ($this->encrypted) {
@@ -136,7 +136,7 @@ class FPDF_Protection extends tFPDF
         /**
         * RC4 is the standard encryption algorithm used in PDF format
         */
-        private function _RC4($key, $text)
+        protected function _RC4($key, $text)
         {
                 if ($this->last_rc4_key != $key) {
                         $k = str_repeat($key, 256/strlen($key)+1);
@@ -174,7 +174,7 @@ class FPDF_Protection extends tFPDF
         /**
         * Get MD5 as binary string
         */
-        private function _md5_16($string)
+        protected function _md5_16($string)
         {
                 return pack('H*',md5($string));
         }
@@ -182,7 +182,7 @@ class FPDF_Protection extends tFPDF
         /**
         * Compute O value
         */
-        private function _Ovalue($user_pass, $owner_pass)
+        protected function _Ovalue($user_pass, $owner_pass)
         {
                 $tmp = $this->_md5_16($owner_pass);
                 $owner_RC4_key = substr($tmp,0,5);
@@ -192,7 +192,7 @@ class FPDF_Protection extends tFPDF
         /**
         * Compute U value
         */
-        private function _Uvalue()
+        protected function _Uvalue()
         {
                 return $this->_RC4($this->encryption_key, $this->padding);
         }
@@ -200,7 +200,7 @@ class FPDF_Protection extends tFPDF
         /**
         * Compute encryption key
         */
-        private function _generateencryptionkey($user_pass, $owner_pass, $protection)
+        protected function _generateencryptionkey($user_pass, $owner_pass, $protection)
         {
                 // Pad passwords
                 $user_pass = substr($user_pass.$this->padding,0,32);
