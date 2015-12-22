@@ -41,6 +41,9 @@ class AweryPdf extends FPDF_Protection
 
     public function __construct($orientation = 'P', $unit = 'mm', $format = 'A4')
     {
+        if (!file_exists(FPDF_FONTPATH)) {
+            mkdir(FPDF_FONTPATH, 0700, true);
+        }
         if (!file_exists(_SYSTEM_TTFONTS)) {
             mkdir(_SYSTEM_TTFONTS, 0700, true);
         }
