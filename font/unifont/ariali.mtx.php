@@ -13,7 +13,7 @@ $desc=array (
 );
 $up=-106;
 $ut=73;
-$ttffile='/opt/awery/lib/tfpdf/font/unifont/ariali.ttf';
+$ttffile='/tmp/font/unifont/ariali.ttf';
 $originalsize=632392;
 $fontkey='arialuuI';
 ?>
