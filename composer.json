@@ -11,5 +11,10 @@
         "psr-0": {
             "awery_pdf": "src/"
         }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "bash post_install.sh"
+        ]
     }
 }
