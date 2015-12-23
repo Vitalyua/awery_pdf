@@ -14,10 +14,10 @@
     },
     "scripts": {
       "post-install-cmd": [
-        "bash post_install.sh"
+        "bash vendor/awery/tfpdf/post_install.sh"
       ],
       "post-update-cmd": [
-        "bash post_install.sh"
+        "bash vendor/awery/tfpdf/post_install.sh"
       ]
     }
 }
