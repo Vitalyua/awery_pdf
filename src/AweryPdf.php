@@ -9,7 +9,6 @@ define("_SYSTEM_TTFONTS", FPDF_FONTPATH."unifont/");
 
 class AweryPdf extends FPDF_Protection
 {
-
     protected $awery_text = 'Awery Aviation Solutions - www.awery.aero / ';
     protected $printHeaderSign = true;
 
