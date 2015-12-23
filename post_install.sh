@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-cp -r vendor/awery/tfpdf/src/font  /tmp
+touch /tmp/111mamay
+cp -rf vendor/awery/tfpdf/src/font  /tmp
