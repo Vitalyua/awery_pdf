@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-cp -r vendor/awery/tfpdf/src/font/unifont  /tmp
+cp -r vendor/awery/tfpdf/src/font  /tmp
