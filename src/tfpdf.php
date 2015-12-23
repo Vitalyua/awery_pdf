@@ -12,7 +12,6 @@ define('tFPDF_VERSION', '1.24');
 
 class tFPDF
 {
-
     var $unifontSubset;
     var $page;               // current page number
     var $n;                  // current object number
@@ -70,6 +69,7 @@ class tFPDF
     var $creator;            // creator
     var $AliasNbPages;       // alias for total number of pages
     var $PDFVersion;         // PDF version number
+
 
     /*******************************************************************************
      *                                                                              *
