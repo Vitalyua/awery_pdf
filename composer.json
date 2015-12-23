@@ -8,8 +8,8 @@
         "php": ">=5.3.0"
     },
     "scripts": {
-      "post-install-cmd": ["bash vendor/awery/tfpdf/post_install.sh"],
-      "post-update-cmd": ["bash vendor/awery/tfpdf/post_install.sh"]
+      "post-install-cmd": ["bash post_install.sh"],
+      "post-update-cmd": ["bash post_install.sh"]
     },
     "autoload": {
         "psr-0": {
