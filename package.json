@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "post-install-cmd": "cp -rf src/font /tmp/",
+    "post-update-cmd": "cp -rf src/font /tmp/"
+  }
+}
