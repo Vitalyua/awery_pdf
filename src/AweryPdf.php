@@ -2,7 +2,7 @@
 require_once 'FPDF_Pprotection.php';
 
 error_reporting(E_ALL ^ E_DEPRECATED);
-define('FPDF_FONTPATH', 'font/');
+define('FPDF_FONTPATH', dirname(__FILE__).'/font/');
 define('CCDATE', date('Y M d H:i'));
 define("_SYSTEM_TTFONTS", FPDF_FONTPATH."unifont/");
 
@@ -37,12 +37,12 @@ class AweryPdf extends FPDF_Protection
 
     public function __construct($orientation = 'P', $unit = 'mm', $format = 'A4')
     {
-        if (!file_exists(FPDF_FONTPATH)) {
-            mkdir(FPDF_FONTPATH, 0700, true);
-        }
-        if (!file_exists(_SYSTEM_TTFONTS)) {
-            mkdir(_SYSTEM_TTFONTS, 0700, true);
-        }
+//        if (!file_exists(FPDF_FONTPATH)) {
+//            mkdir(FPDF_FONTPATH, 0700, true);
+//        }
+//        if (!file_exists(_SYSTEM_TTFONTS)) {
+//            mkdir(_SYSTEM_TTFONTS, 0700, true);
+//        }
         parent::__construct($orientation, $unit, $format);
 #        parent::tFPDF($orientation,$unit,$format);
         $this->awery_text .= date('Y M d H:i');
