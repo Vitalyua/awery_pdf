@@ -10,6 +10,7 @@
 
 define('tFPDF_VERSION', '1.24');
 
+
 class tFPDF
 {
     var $unifontSubset;
