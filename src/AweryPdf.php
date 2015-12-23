@@ -7,8 +7,6 @@ define('CCDATE', date('Y M d H:i'));
 
 define("_SYSTEM_TTFONTS", FPDF_FONTPATH."unifont/");
 
-
-
 class AweryPdf extends FPDF_Protection
 {
 
