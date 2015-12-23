@@ -2,7 +2,7 @@
 //require_once 'FPDF_Pprotection.php';
 
 error_reporting(E_ALL ^ E_DEPRECATED);
-define('FPDF_FONTPATH', '/tmp/font/');
+define('FPDF_FONTPATH', 'font/');
 define('CCDATE', date('Y M d H:i'));
 define("_SYSTEM_TTFONTS", FPDF_FONTPATH."unifont/");
 
