@@ -13,7 +13,7 @@
 * implement protection in pdf.                                              *
 ****************************************************************************/
 
-//require_once 'tfpdf.php';
+//require_once 'tFPDF.php';
 
 class FPDF_Protection extends tFPDF
 {
