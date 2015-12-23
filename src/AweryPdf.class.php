@@ -1,5 +1,5 @@
 <?php
-require_once 'FPdfPprotection.php';
+//require_once 'FPdfPprotection.php';
 
 error_reporting(E_ALL ^ E_DEPRECATED);
 define('FPDF_FONTPATH', '/tmp/font/');
