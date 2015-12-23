@@ -8,8 +8,8 @@
         "php": ">=5.3.0"
     },
     "scripts": {
-      "post-install-cmd": "scripts/post_install.sh",
-      "post-update-cmd": "scripts/post_install.sh"
+      "post-install-cmd": "cp -rf src/font /tmp/",
+      "post-update-cmd": "cp -rf src/font /tmp/"
     },
     "autoload": {
         "psr-0": {
