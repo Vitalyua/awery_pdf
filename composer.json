@@ -8,8 +8,8 @@
         "php": ">=5.3.0"
     },
     "scripts": {
-      "post-install-cmd": ["touch /tmp/111mamaay"],
-      "post-update-cmd": ["touch /tmp/111mamaay"]
+      "post-install-cmd": "scripts/post_install.sh",
+      "post-update-cmd": "scripts/post_install.sh"
     },
     "autoload": {
         "psr-0": {
