@@ -11,7 +11,6 @@ class AweryPdf extends FPDF_Protection
 {
 
     protected $awery_text = 'Awery Aviation Solutions - www.awery.aero / ';
-
     protected $printHeaderSign = true;
 
     protected $signAlert = false;
