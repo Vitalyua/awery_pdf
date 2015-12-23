@@ -13,8 +13,11 @@
         }
     },
     "scripts": {
-        "post-install-cmd": [
-            "bash post_install.sh"
-        ]
+      "post-install-cmd": [
+        "bash post_install.sh"
+      ],
+      "post-update-cmd": [
+        "bash post_install.sh"
+      ]
     }
 }
