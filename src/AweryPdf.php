@@ -254,7 +254,8 @@ class AweryPdf extends FPDF_Protection
                 $imageHeight = 12.66;
             } else {
                 $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_739_bw.png';
-                $imageHeight = Zend_Registry::get('realm_name') == 'chapman' ? 50 : 33.43;
+//                $imageHeight = Zend_Registry::get('realm_name') == 'chapman' ? 50 : 33.43;
+                $imageHeight = 33.43;
             }
 //            \Zend_Debug::dump($image);
             if (file_exists($image)) {
