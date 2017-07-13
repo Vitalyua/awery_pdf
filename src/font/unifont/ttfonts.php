@@ -35,7 +35,7 @@ define("GF_TWOBYTWO",(1 << 7));
 
 
 
-class TTFontFile_awery {
+class TTFontFile_Awery {
 
 var $maxUni;
 var $_pos;
