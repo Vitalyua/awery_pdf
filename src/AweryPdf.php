@@ -250,10 +250,16 @@ class AweryPdf extends FPDF_Protection
 
         if (!$this->hideHeaderImage) {
             if ($this->CurOrientation == 'L') {
-                $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '6500_280.png';
+                if(file_exists(APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '6500_280.png'))
+                    $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '6500_280.png';
+                else
+                    $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'header_horizontal.png';
                 $imageHeight = 12.66;
             } else {
-                $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_739_bw.png';
+                if(file_exists(APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '6500_280.png'))
+                    $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_739_bw.png';
+                else
+                    $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'header.png';
 //                $imageHeight = Zend_Registry::get('realm_name') == 'chapman' ? 50 : 33.43;
                 $imageHeight = 33.43;
             }
@@ -359,12 +365,14 @@ class AweryPdf extends FPDF_Protection
         if (!$this->hideHeaderImage) {
             if ($this->CurOrientation == 'L') {
                 $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '6500_280.png';
+                $image2 = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'header_horizontal.png';
                 $imageHeight = 12.66;
             } else {
                 $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_739_bw.png';
+                $image2 = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'header.png';
                 $imageHeight = 33.43;
             }
-            if (file_exists($image)) {
+            if (file_exists($image) || file_exists($image2)) {
                 $height += $imageHeight + 15;
             } else {
                 $height += 3;
@@ -396,7 +404,11 @@ class AweryPdf extends FPDF_Protection
         $pageBreak = 0;
         $lineY = 1;
         if ($this->CurOrientation != 'L') {
-            $footerImage = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_260_footer.png';
+            if(file_exists(APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_260_footer.png')) {
+                $footerImage = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_260_footer.png';
+            } else {
+                $footerImage = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'footer.png';
+            }
             #todo - поправить этот путь
             $footerText = AWERY_PATH . '/src/Reports/templates_pdf/' . $this->prefix . 'footer.txt';
             if (file_exists($footerImage)) {
@@ -446,8 +458,9 @@ class AweryPdf extends FPDF_Protection
 
         if ($this->CurOrientation != 'L') {
             $footerImage = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_260_footer.png';
+            $footerImage2 = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'footer.png';
             $footerText = AWERY_PATH . '/src/Reports/templates_pdf/' . $this->prefix . 'footer.txt';
-            if (file_exists($footerImage)) {
+            if (file_exists($footerImage) || file_exists($footerImage2)) {
                 $height = 12;
             } elseif (file_exists($footerText)) {
                 $data = file($footerText);
