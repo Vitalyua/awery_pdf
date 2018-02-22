@@ -2,7 +2,7 @@
     "name": "awery/tfpdf",
     "description": "Unofficial PSR-0 compliant version of the FPDF library, php7 refactored",
     "homepage": "http://www.fpdf.org/",
-    "license": "no usage restriction",
+    "license": "LGPL",
     "type": "library",
     "require": {
         "php": ">=5.3.0"
