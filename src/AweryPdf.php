@@ -256,10 +256,10 @@ class AweryPdf extends FPDF_Protection
                     $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'header_horizontal.png';
                 $imageHeight = 12.66;
             } else {
-                if(file_exists(APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '6500_280.png'))
-                    $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_739_bw.png';
-                else
+                if(file_exists(APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'header.png'))
                     $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'header.png';
+                else
+                    $image = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_739_bw.png';
 //                $imageHeight = Zend_Registry::get('realm_name') == 'chapman' ? 50 : 33.43;
                 $imageHeight = 33.43;
             }
