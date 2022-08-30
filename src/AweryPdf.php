@@ -1,5 +1,5 @@
 <?php
-require_once 'FPDF_Pprotection.php';
+require_once 'FPDF_Protection.php';
 
 error_reporting(E_ALL ^ E_DEPRECATED);
 define('FPDF_FONTPATH', dirname(__FILE__).'/font/');
@@ -90,7 +90,8 @@ class AweryPdf extends FPDF_Protection
     public function CenterText($text, $y = null)
     {
         if (preg_match('~[0-9]+~', $text, $matches) AND is_string($y)) {
-            return $this->_CenterText($text, $y);
+            $this->_CenterText($text, $y);
+            return;
         }
 
 
@@ -174,8 +175,7 @@ class AweryPdf extends FPDF_Protection
                 }
             }
         } elseif ($currency_id !== $dr_cr_id AND floatval($dr_rate) == floatval($cr_rate)) {
-            $Acc_Info = new Acc_Info();
-            $text = 'Currency rate: 1 ' . $Acc_Info->getCurrencyName($dr_cr_id) . ' = ' . $dr_rate . ' ' . $Acc_Info->getCurrencyName($currency_id);
+            $text = 'Currency rate: 1 ' . \Acc_Info::getCurrencyName($dr_cr_id) . ' = ' . $dr_rate . ' ' . \Acc_Info::getCurrencyName($currency_id);
         }
 
         if ($draw AND !empty($text)) {
@@ -388,6 +388,7 @@ class AweryPdf extends FPDF_Protection
         if ($this->invoiceNumber !== null OR $this->showPageNo) {
             $height += 5;
         }
+        return $height;
     }
 
     public function HideFooter($flag = true)
@@ -993,12 +994,12 @@ class AweryPdf extends FPDF_Protection
 
 
         // if protection enabled
-        $encryption = Zend_Registry::isRegistered("pdf_global_encryption") ? Zend_Registry::get("pdf_global_encryption") : false;
+        $encryption = \Awery\Globals::GI()->get('pdf_global_encryption',false);
 
         if ($encryption) {
-            $permissions = Zend_Registry::get("pdf_global_permissions_array");
+            $permissions = \Awery\Globals::GI()->get('pdf_global_permissions_array');
             $user_pass = "";
-            $owner_pass = Zend_Registry::get("pdf_edit_password"); // or null for autogeneration
+            $owner_pass = \Awery\Globals::GI()->get('pdf_edit_password'); // or null for autogeneration
             $this->SetProtection($permissions, $user_pass, $owner_pass);
         }
 

@@ -144,7 +144,7 @@ class FPDF_Protection extends tFPDF
                         $j = 0;
                         for ($i=0; $i<256; $i++){
                                 $t = $rc4[$i];
-                                $j = ($j + $t + ord($k{$i})) % 256;
+                                $j = ($j + $t + ord($k[$i])) % 256;
                                 $rc4[$i] = $rc4[$j];
                                 $rc4[$j] = $t;
                         }
@@ -165,7 +165,7 @@ class FPDF_Protection extends tFPDF
                         $rc4[$a] = $rc4[$b];
                         $rc4[$b] = $t;
                         $k = $rc4[($rc4[$a]+$rc4[$b])%256];
-                        $out.=chr(ord($text{$i}) ^ $k);
+                        $out.=chr(ord($text[$i]) ^ $k);
                 }
 
                 return $out;
