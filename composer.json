@@ -6,9 +6,10 @@
     "type": "library",
     "require": {
         "php": ">=7.2.0",
-      "ext-mbstring" : "*",
-      "ext-zlib" : "*",
-      "ext-gd" : "*"
+        "ext-mbstring" : "*",
+        "ext-zlib" : "*",
+        "ext-gd" : "*",
+        "setasign/tfpdf": "^1.33"
     },
     "autoload": {
         "psr-0": {

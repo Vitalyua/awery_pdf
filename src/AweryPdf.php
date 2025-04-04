@@ -10,31 +10,91 @@ define("_SYSTEM_TTFONTS", FPDF_FONTPATH."unifont/");
 class AweryPdf extends FPDF_Protection
 {
 
-    protected $awery_text = 'Awery Aviation Solutions - www.awery.aero / ';
-    protected $printHeaderSign = true;
+    public $unifontSubset;
+    public $page;               // current page number
+    public $n;                  // current object number
+    public $offsets;            // array of object offsets
+    public $buffer;             // buffer holding in-memory PDF
+    public $pages;              // array containing pages
+    public $state;              // current document state
+    public $compress;           // compression flag
+    public $k;                  // scale factor (number of points in user unit)
+    public $DefOrientation;     // default orientation
+    public $CurOrientation;     // current orientation
+    public $StdPageSizes;       // standard page sizes
+    public $DefPageSize;        // default page size
+    public $CurPageSize;        // current page size
+    public $CurRotation;        // current page rotation
+    public $PageInfo;           // page-related data
+    public $wPt, $hPt;          // dimensions of current page in points
+    public $w, $h;              // dimensions of current page in user unit
+    public $lMargin;            // left margin
+    public $tMargin;            // top margin
+    public $rMargin;            // right margin
+    public $bMargin;            // page break margin
+    public $cMargin;            // cell margin
+    public $x, $y;              // current position in user unit
+    public $lasth;              // height of last printed cell
+    public $LineWidth;          // line width in user unit
+    public $fontpath;           // path containing fonts
+    public $CoreFonts;          // array of core font names
+    public $fonts;              // array of used fonts
+    public $FontFiles;          // array of font files
+    public $encodings;          // array of encodings
+    public $cmaps;              // array of ToUnicode CMaps
+    public $FontFamily;         // current font family
+    public $FontStyle;          // current font style
+    public $underline;          // underlining flag
+    public $CurrentFont;        // current font info
+    public $FontSizePt;         // current font size in points
+    public $FontSize;           // current font size in user unit
+    public $DrawColor;          // commands for drawing color
+    public $FillColor;          // commands for filling color
+    public $TextColor;          // commands for text color
+    public $ColorFlag;          // indicates whether fill and text colors are different
+    public $WithAlpha;          // indicates whether alpha channel is used
+    public $ws;                 // word spacing
+    public $images;             // array of used images
+    public $PageLinks;          // array of links in pages
+    public $links;              // array of internal links
+    public $AutoPageBreak;      // automatic page breaking
+    public $PageBreakTrigger;   // threshold used to trigger page breaks
+    public $InHeader;           // flag set when processing header
+    public $InFooter;           // flag set when processing footer
+    public $AliasNbPages;       // alias for total number of pages
+    public $ZoomMode;           // zoom display mode
+    public $LayoutMode;         // layout display mode
+    public $metadata;           // document properties
+    public $CreationDate;       // document creation date
+    public $PDFVersion;         // PDF version number
 
-    protected $signAlert = false;
-    protected $prefix = '';
+    public $awery_text = 'Awery Aviation Solutions - www.awery.aero / ';
+    public $printHeaderSign = true;
 
-    protected $calculation = false;
-    protected $calculatedHeight = 0;
+    public $signAlert = false;
+    public $prefix = '';
 
-    protected $invoiceNumber = null;
-    protected $invoiceDate = null;
-    protected $invoiceDueDate = null;
+    public $calculation = false;
+    public $calculatedHeight = 0;
 
-    protected $addInvoiceIdToDate = true;
+    public $invoiceId = null;
+    public $invoiceDateSize = 12;
+    public $invoiceNumber = null;
+    public $invoiceDate = null;
+    public $invoiceDueDate = null;
 
-    protected $reference = null;
+    public $addInvoiceIdToDate = true;
 
-    protected $textHeader = null;
-    protected $disableFooter = false;
+    public $reference = null;
 
-    protected $sign;
-    protected $showPageNo = false;
+    public $textHeader = null;
+    public $disableFooter = false;
 
-    protected $hideHeader = false;
-    protected $hideHeaderImage = false;
+    public $sign, $subject;
+    public $showPageNo = false;
+
+    public $hideHeader = false;
+    public $hideHeaderImage = false;
 
     public function __construct($orientation = 'P', $unit = 'mm', $format = 'A4')
     {
@@ -102,8 +162,11 @@ class AweryPdf extends FPDF_Protection
         $this->Text($this->GetCenterPos($text), $y, $text);
     }
 
-    public function SetSubject($subject, $sign = false, $isUTF8 = false)
+    public function SetSubject($subject, $isUTF8 = false, $sign = false)
     {
+        if ($isUTF8)
+            $subject = $this->_UTF8toUTF16($subject);
+        $this->subject = $subject;
         parent::SetSubject($subject, $isUTF8);
         $this->setSign($sign);
     }
@@ -111,6 +174,7 @@ class AweryPdf extends FPDF_Protection
     public function setSign($sign)
     {
         $this->sign = $sign;
+        $this->metadata['Sign'] = $sign;
     }
 
     public function addInvoiceIdToDate($flag = true)
@@ -159,6 +223,15 @@ class AweryPdf extends FPDF_Protection
         $this->reference = $ref_no;
     }
 
+    /**
+     * @param $dr_rate
+     * @param $cr_rate
+     * @param $draw
+     * @param $currency_id
+     * @param $dr_cr_id
+     * @return string|void
+     * @deprecated
+     */
     public function CurrencyNote($dr_rate, $cr_rate = null, $draw = true, $currency_id = null, $dr_cr_id = null)
     {
         if ($cr_rate === null) {
@@ -175,7 +248,7 @@ class AweryPdf extends FPDF_Protection
                 }
             }
         } elseif ($currency_id !== $dr_cr_id AND floatval($dr_rate) == floatval($cr_rate)) {
-            $text = 'Currency rate: 1 ' . \Acc_Info::getCurrencyName($dr_cr_id) . ' = ' . $dr_rate . ' ' . \Acc_Info::getCurrencyName($currency_id);
+            $text = 'Currency rate: 1 ' . \Acc\Info::getCurrencyName($dr_cr_id) . ' = ' . $dr_rate . ' ' . \Acc\Info::getCurrencyName($currency_id);
         }
 
         if ($draw AND !empty($text)) {
@@ -411,7 +484,7 @@ class AweryPdf extends FPDF_Protection
                 $footerImage = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'footer.png';
             }
             #todo - поправить этот путь
-            $footerText = AWERY_PATH . '/src/Reports/templates_pdf/' . $this->prefix . 'footer.txt';
+            $footerText = '/src/Reports/templates_pdf/' . $this->prefix . 'footer.txt';
             if (file_exists($footerImage)) {
                 $lineY = $this->h - 12;
                 $pageBreak = $lineY + 4;
@@ -460,7 +533,7 @@ class AweryPdf extends FPDF_Protection
         if ($this->CurOrientation != 'L') {
             $footerImage = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . '4421_260_footer.png';
             $footerImage2 = APPLICATION_PATH . '/decoration/reports/' . $this->prefix . 'footer.png';
-            $footerText = AWERY_PATH . '/src/Reports/templates_pdf/' . $this->prefix . 'footer.txt';
+            $footerText = '/src/Reports/templates_pdf/' . $this->prefix . 'footer.txt';
             if (file_exists($footerImage) || file_exists($footerImage2)) {
                 $height = 12;
             } elseif (file_exists($footerText)) {
@@ -602,7 +675,7 @@ class AweryPdf extends FPDF_Protection
             $this->calculatedHeight += $cell_h * 2;
         }
 
-        return parent::Cell($w, $cell_h, $txt, $border, $ln, $align, $fill, $link);
+        parent::Cell($w, $cell_h, $txt, $border, $ln, $align, $fill, $link);
     }
 
     public function Cell($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $calculate = true)
@@ -611,14 +684,14 @@ class AweryPdf extends FPDF_Protection
             $this->calculatedHeight += $h;
         }
 
-        return parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link);
+        parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link);
     }
 
-    public function Th($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $calculate = true)
+    public function Th($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $calculate = true) :void
     {
         $words = explode("\n", $txt);
         if (empty($words)) {
-            return parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link, $calculate);
+            parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link, $calculate);
         }
 
         $x_before = $this->x;
@@ -653,23 +726,6 @@ class AweryPdf extends FPDF_Protection
         $this->x = $set_x;
     }
 
-//    public function  Text($x, $y, $txt) {
-//        if ($this->calculation == true AND $calculate == true) {
-//            $this->calculatedHeight += $h;
-//        }
-//        return parent::Text($x, $y, $txt);
-//    }
-
-    public function AddPage($orientation = '', $format = '')
-    {
-//        if (isset($this->pages[$this->page + 1])) {
-//            $this->page++;
-//            $this->SetY($this->getHeaderHeight());
-//        } else {
-        parent::AddPage($orientation = '', $format = '');
-//        }
-    }
-
     public function _getfontpath()
     {
         if (!defined('FPDF_FONTPATH') && is_dir(dirname(__FILE__) . '/font')) {
@@ -679,317 +735,7 @@ class AweryPdf extends FPDF_Protection
         return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
-    //TODO - remove this method!!!!! - to anton
-    public function horizontalTable(array $labels, array $data, $config = array())
-    {
-        $defaults = array(
-            'label_bold' => true,
-            'label_width' => 25,
-            'label_border' => 0,
-            'label_align' => 'R',
-            'cell_bold' => false,
-            'cell_underline' => false,
-            'cell_width' => 0,
-            'cell_border' => 0,
-            'cell_align' => 'L',
-            'use_colon' => true,
-            'height' => 8,
-            'hide_empty' => true,
-        );
-
-        $config = array_merge($defaults, $config);
-        if ($config['cell_width'] == 0) {
-            $config['cell_width'] = (int)$this->w - $this->lMargin - $this->rMargin - $config['label_width'];
-        }
-
-        foreach ($labels as $label => $field) {
-            if (is_array($field)) {
-                $string_code = str_replace('__VAL__', '$data[$field[1]]', $field[0]) . ';';
-                $value = '';
-                if (isset($data[$field[1]])) {
-                    eval('$value = ' . $string_code . ';');
-                }
-            } else {
-                $value = (isset($data[$field])) ? $data[$field] : '';
-            }
-
-            if (empty($value) AND $config['hide_empty']) {
-                continue;
-            }
-
-            if ($config['use_colon']) {
-                $label .= ':';
-            }
-
-            $this->SetFont($this->FontFamily, ($config['label_bold']) ? 'B' : '', $this->FontSizePt);
-            $this->Cell($config['label_width'], $config['height'], $label, $config['label_border'], 0, $config['label_align']);
-            $font_style = '';
-            if ($config['cell_bold']) $font_style .= 'B';
-            if ($config['cell_underline']) $font_style .= 'U';
-            $this->SetFont($this->FontFamily, $font_style, $this->FontSizePt);
-            $padding_height = floor($config['height'] / 3);
-            $line_height = $this->getStringHeight($value, $config['cell_width'], $config['height'] - $padding_height);
-            if ($line_height > $config['height']) {
-                $this->y = $this->y + $padding_height / 2;
-                $this->MultilineCell($config['cell_width'], array($config['height'] - $padding_height, $line_height), $value, $config['cell_border'], 1, $config['cell_align']);
-            } else {
-                $this->Cell($config['cell_width'], $config['height'], $value, $config['cell_border'], 1, $config['cell_align']);
-            }
-        }
-    }
-
-    public function table(array $map, array $data, $config = array(), $totals = array())
-    {
-        $defaults = array(
-            'caption' => false,
-            'caption_right' => false,
-            'caption_right_size' => 3,
-            'caption_right_bold' => true,
-            'page_break_text' => false,
-            'page_break_margin' => 0,
-            'margin_left' => 5,
-            'margin_right' => 5,
-            'multiline' => false,
-            'border' => 1,
-            'color' => array(0, 0, 0),
-            'label_bold' => true,
-            'label_align' => 'C',
-            'label_height' => 8,
-            'cell_bold' => false,
-            'cell_align' => 'C',
-            'cell_height' => 5,
-            'hide_empty' => true,
-            'style' => 'awery',
-            'totals_label' => 'TOTAL:',
-            'totals_label_align' => 'R',
-            'totals_height' => 6,
-            'totals_towords' => false,
-            'totals_format' => array(),
-        );
-
-        $config = $config + $defaults;
-
-        $this->_tableHeader($map, $config);
-
-        if (isset($config['style']) && $config['style'] == 'awery') {
-            $this->Ln(1);
-            $this->SetDrawColor(136, 136, 136);
-        }
-
-        $font_style = '';
-        if (@$config['cell_bold'] && @$config['bold']) $font_style .= 'B';
-        if (@$config['underline']) $font_style .= 'U';
-        $this->SetFont($this->FontFamily, $font_style, $this->FontSizePt);
-
-        $footer_height = $this->GetFooterHeight();
-        $count_fields = count($map);
-        $totals_val = $complited = array();
-
-        $lineheight = $config['cell_height'];
-        if ($config['multiline']) {
-            $ii = 0;
-            foreach ($data as $row_index => $row_data) {
-                $kk = 0;
-                $ii++;
-                foreach ($map as $row_field => $row_params) {
-                    $kk++;
-
-                    if (isset($row_params['value'])) {
-                        eval('$row_data[$row_field] = ' . str_replace('$row', '$row_data', $row_params['value']) . ';');
-                    }
-
-                    if (isset($row_params['format'])) {
-                        $string_code = str_replace(array('$i', '__VAL__'), array('$ii', '$row_data[$row_field]'), $row_params['format']) . ';';
-                        eval('$value = ' . $string_code . ';');
-                    } else {
-                        $value = (isset($row_data[$row_field])) ? $row_data[$row_field] : '';
-                    }
-
-                    if (isset($row_params['exec'])) {
-                        eval(str_replace('__VAL__', '$row_data[$row_field]', $row_params['exec']) . ';');
-                    }
-
-                    $cellH = $this->getStringHeight($value, $row_params['width'], $config['cell_height'] - 0.5);
-                    $lineheight = ($cellH > $lineheight) ? $cellH : $lineheight;
-                }
-            }
-        }
-
-        $i = 0;
-        foreach ($data as $row) {
-            $k = 0;
-            $i++;
-            foreach ($map as $field => $params) {
-                $k++;
-
-                if ($this->GetY() > ($this->h - ($footer_height + 10))) {
-                    $current_margin_left = $this->lMargin;
-                    $current_margin_right = $this->rMargin;
-
-                    $this->SetLeftMargin($config['margin_left']);
-                    $this->SetRightMargin($config['margin_right']);
-                    $this->AddPage();
-                    if ($config['page_break_text']) {
-                        $this->SetY($this->y + $config['page_break_margin']);
-                        $def_size = $this->FontSizePt;
-                        $this->SetFont($this->FontFamily, 'B', $this->FontSizePt + 3);
-                        $this->Cell(0, 6, $config['page_break_text'], 0, 1, 'C');
-                        $this->SetFont($this->FontFamily, '', $def_size);
-                    }
-                    $this->SetLeftMargin($current_margin_left);
-                    $this->SetRightMargin($current_margin_right);
-                    $this->SetDrawColor(0, 0, 0);
-                    $this->_tableHeader($map, $config);
-                    if ($config['style'] == 'awery') {
-                        $this->Ln(1);
-                        $this->SetDrawColor(136, 136, 136);
-                    }
-                }
-
-                $font_style = '';
-                if (@$config['cell_bold'] AND @$params['bold']) $font_style .= 'B';
-                if (@$params['underline']) $font_style .= 'U';
-                $this->SetFont($this->FontFamily, $font_style, $this->FontSizePt);
-                $this->SetTextColor($config['color'][0], $config['color'][1], $config['color'][2]);
-
-//                if (!isset($complited[$field])) {
-                if (isset($params['value'])) {
-                    if (!preg_match('~\$row~', $params['value'])) {
-                        $row[$field] = $params['value'];
-                    } else {
-                        eval('$row[$field] = ' . $params['value'] . ';');
-                    }
-                }
-
-                if (isset($params['format'])) {
-                    $string_code = str_replace('__VAL__', '$row[$field]', $params['format']) . ';';
-                    eval('$value = ' . $string_code . ';');
-                } else {
-                    $value = (isset($row[$field])) ? $row[$field] : '';
-                }
-
-                if (isset($params['exec'])) {
-                    eval(str_replace('__VAL__', '$row[$field]', $params['exec']) . ';');
-                }
-//                } else {
-//                    $value = $complited[$field];
-//                }
-
-                if (in_array($field, $totals)) {
-                    if (!isset($totals_val[$field])) {
-                        $totals_val[$field] = 0;
-                    }
-
-                    $cur_total_val = (isset($row[$field])) ? $row[$field] : $value;
-                    if (!isset($config['totals_format'][$field])) {
-                        $totals_val[$field] = $totals_val[$field] + $cur_total_val;
-                    } else {
-                        eval('$totals_val[$field] = ' . $config['totals_format'][$field] . ';');
-                    }
-                }
-
-                $align = ($params['align']) ? $params['align'] : $config['label_align'];
-                if (!$config['multiline']) {
-                    $this->Cell($params['width'], $config['cell_height'], $value, $config['border'], ($k == $count_fields) ? 1 : 0, $align);
-                } else {
-                    $this->MultilineCell($params['width'], array($config['cell_height'] - 0.5, $lineheight), $value, $config['border'], ($k == $count_fields) ? 1 : 0, $align);
-                }
-            }
-        }
-
-        if (!empty($totals_val)) {
-            $this->Ln(1);
-            $this->SetDrawColor(0, 0, 0);
-            $this->SetFont($this->FontFamily, ($config['label_bold']) ? 'B' : '', $this->FontSizePt);
-            $this->SetTextColor($config['color'][0], $config['color'][1], $config['color'][2]);
-
-            $totals_width = array();
-            $count_fields = count($map);
-            $map_keys = array_keys($map);
-            foreach ($map as $field => $params) {
-                if (!isset($current_field)) {
-                    $current_field = $field;
-                }
-
-                if (!in_array($field, $totals)) {
-                    if (!isset($totals_width[$current_field])) {
-                        $totals_width[$current_field] = 0;
-                    }
-
-                    $totals_width[$current_field] += $map[$field]['width'];
-                } else {
-                    $cur_index = array_search($field, $map_keys);
-                    $totals_width[$map_keys[$cur_index]] = $map[$field]['width'];
-                    $current_field = @$map_keys[$cur_index + 1];
-                }
-            }
-
-            $count_totals = count($totals_width);
-            $ik = 0;
-            foreach ($totals_width as $tf => $width) {
-                $ik++;
-
-                if (isset($map[$tf]['exec'])) {
-                    eval(str_replace('__VAL__', '$row[$field]', $map[$tf]['exec']) . ';');
-                }
-
-                if ($ik == 1 AND !isset($totals_val[$tf])) {
-                    $txt = $config['totals_label'];
-                    if (is_array($config['totals_towords'])) {
-                        $txt .= ' ' . to_words($totals_val[$config['totals_towords'][0]], $config['totals_towords'][1]);
-                    }
-                    $align = $config['totals_label_align'];
-                } else {
-                    $txt = @$totals_val[$tf];
-                    if (isset($map[$tf]['format']) && !isset($map[$tf]['skip_format_for_total'])) {
-                        $string_code = str_replace('__VAL__', '$txt', $map[$tf]['format']) . ';';
-                        eval('$txt = ' . $string_code . ';');
-                    }
-                    $align = (@$map[$tf]['align']) ? $map[$tf]['align'] : $config['label_align'];
-                }
-
-                $this->Cell($width, $config['totals_height'], $txt, $config['border'], ($ik == $count_totals) ? 1 : 0, $align);
-            }
-        }
-    }
-
-    protected function _tableHeader(array $map, array $config)
-    {
-        $def_size = $this->FontSizePt;
-        $caption_size = $this->FontSizePt + 3;
-        if ($config['caption']) {
-            $this->SetFont($this->FontFamily, 'B', $caption_size);
-            $this->Cell($this->w / 2, 8, $config['caption'], 0, ($config['caption_right']) ? 0 : 1);
-        }
-        if ($config['caption_right']) {
-            $this->SetFont($this->FontFamily, ($config['caption_right_bold']) ? 'B' : '', $def_size + $config['caption_right_size']);
-            $this->Cell(0, 8, $config['caption_right'], 0, 1, 'R');
-        }
-        $this->SetFont($this->FontFamily, ($config['label_bold']) ? 'B' : '', $def_size);
-        $i = 0;
-        $count_fields = count($map);
-        $this->SetDrawColor(0, 0, 0);
-        foreach ($map as $field => $params) {
-            $i++;
-
-            if (!is_numeric(@$params['width'])) {
-                throw new Exception('Column width for "' . $field . '" is invalid!');
-            }
-
-            if (!is_string(@$params['label'])) {
-                $params['label'] = ucwords(str_replace('_', ' ', $field));
-            }
-
-            $method = 'Cell';
-            if (mb_strpos($params['label'], "\n") !== false) {
-                $method = 'Th';
-            }
-
-            $this->$method($params['width'], $config['label_height'], $params['label'], $config['border'], ($i == $count_fields) ? 1 : 0, $config['label_align']);
-        }
-    }
-
-    public function Output($name = '', $dest = '')
+    public function Output($name = '', $dest = '', $isUTF8 = false)
     {
 
 
@@ -1002,65 +748,7 @@ class AweryPdf extends FPDF_Protection
             $owner_pass = \Awery\Globals::GI()->get('pdf_edit_password'); // or null for autogeneration
             $this->SetProtection($permissions, $user_pass, $owner_pass);
         }
-
-        //Output PDF to some destination
-        if ($this->state < 3)
-            $this->Close();
-        $dest = strtoupper($dest);
-        if ($dest == '') {
-            if ($name == '') {
-                $name = 'doc.pdf';
-                $dest = 'I';
-            } else
-                $dest = 'I';
-        }
-        switch ($dest) {
-            case 'I':
-                //Send to standard output
-                if (ob_get_length())
-                    $this->Error('Some data has already been output, can\'t send PDF file');
-                if (php_sapi_name() != 'cli') {
-                    //We send to a browser
-                    header('Content-Type: application/pdf');
-                    if (headers_sent())
-                        $this->Error('Some data has already been output, can\'t send PDF file');
-                    header('Content-Length: ' . strlen($this->buffer));
-                    header('Content-Disposition: inline; filename="' . $name . '"');
-                    header('Cache-Control: private, max-age=0, must-revalidate');
-                    header('Pragma: public');
-                    ini_set('zlib.output_compression', '0');
-                }
-                echo $this->buffer;
-                break;
-            case 'D':
-                //Download file
-                if (ob_get_length())
-                    $this->Error('Some data has already been output, can\'t send PDF file');
-                header('Content-Type: application/x-download');
-                if (headers_sent())
-                    $this->Error('Some data has already been output, can\'t send PDF file');
-                header('Content-Length: ' . strlen($this->buffer));
-                header('Content-Disposition: attachment; filename="' . $name . '"');
-                header('Cache-Control: private, max-age=0, must-revalidate');
-                header('Pragma: public');
-                ini_set('zlib.output_compression', '0');
-                echo $this->buffer;
-                break;
-            case 'F':
-                //Save to local file
-                $f = fopen($name, 'wb');
-                if (!$f)
-                    $this->Error('Unable to create output file: ' . $name);
-                fwrite($f, $this->buffer, strlen($this->buffer));
-                fclose($f);
-                break;
-            case 'S':
-                //Return as a string
-                return $this->buffer;
-            default:
-                $this->Error('Incorrect output destination: ' . $dest);
-        }
-        return '';
+        return parent::Output($name, $dest, $isUTF8);
     }
 
     /*
