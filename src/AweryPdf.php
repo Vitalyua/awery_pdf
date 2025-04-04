@@ -1,9 +1,11 @@
 <?php
 require_once 'FPDF_Protection.php';
 
-define('FPDF_FONTPATH', dirname(__FILE__).'/font/');
+//if ( !defined('FPDF_FONTPATH') )
+//    define('FPDF_FONTPATH', dirname(__FILE__).'/font/');
 define('CCDATE', date('Y M d H:i'));
-define("_SYSTEM_TTFONTS", FPDF_FONTPATH."unifont/");
+//if ( !defined('_SYSTEM_TTFONTS') )
+//    define("_SYSTEM_TTFONTS", FPDF_FONTPATH."unifont/");
 
 
 class AweryPdf extends FPDF_Protection
