@@ -9,7 +9,7 @@
         "ext-mbstring" : "*",
         "ext-zlib" : "*",
         "ext-gd" : "*",
-        "setasign/tfpdf": "^1.33"
+        "setasign/tfpdf": "~1.33"
     },
     "autoload": {
         "psr-0": {
