@@ -24,6 +24,9 @@ class FPDF_Protection extends tFPDF
         var $last_rc4_key;       //last RC4 key encrypted (cached for optimisation)
         var $last_rc4_key_c;     //last RC4 computed key
 
+        var $encryption_key;     //encryption key
+        var $padding;            //padding string for passwords
+
         public function __construct($orientation='P',$unit='mm',$format='A4')
         {
                 parent::__construct($orientation,$unit,$format);
